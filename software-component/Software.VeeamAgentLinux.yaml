@@ -1,0 +1,221 @@
+'@type': "SoftwareComponentType"
+createdDate: "2017-05-25T15:11:44.915Z"
+lastUpdated: "2017-06-01T14:03:47.457Z"
+id: "Software.VeeamAgentLinux"
+name: "Veeam Agent for Linux"
+description: "Installs the Veeam Agent for Linux on CentOS or another RPM-based distro\
+  \ from an SMB share and licenses it as a server. Requires that the deployed machine\
+  \ have access to an SMB shared repository where the .rpm and .lic files reside,\
+  \ as well as have Internet access to the public Veeam software repos from where\
+  \ the packages will be pulled. Developed and tested on CentOS and OEL 7.3 with the\
+  \ Veeam Agent for Linux 1.0 U1 on vRealize Automation 7.2."
+publishStatus: "PUBLISHED"
+publishStatusName: "Published"
+schema:
+  fields:
+  - id: "agentlicense"
+    label: "agentlicense"
+    description: "Filename of the license file in .lic format. It must have an entitlement\
+      \ to the Veeam Agent for Linux."
+    dataType:
+      type: "primitive"
+      typeId: "STRING"
+    state:
+      dependencies: []
+      facets:
+      - type: "derivedValue"
+        value:
+          type: "constant"
+          value:
+            type: "string"
+            value: "veeam_agent_linux.lic"
+      - type: "mandatory"
+        value:
+          type: "constant"
+          value:
+            type: "boolean"
+            value: true
+    isMultiValued: false
+  - id: "agentpackage"
+    label: "agentpackage"
+    description: "Filename of the agent installation package in .rpm format."
+    dataType:
+      type: "primitive"
+      typeId: "STRING"
+    state:
+      dependencies: []
+      facets:
+      - type: "derivedValue"
+        value:
+          type: "constant"
+          value:
+            type: "string"
+            value: "veeam-release-el7-1.0-1.x86_64.rpm"
+      - type: "mandatory"
+        value:
+          type: "constant"
+          value:
+            type: "boolean"
+            value: true
+    isMultiValued: false
+  - id: "sharepath"
+    label: "sharepath"
+    description: "Full SMB path where the .rpm and .lic files reside. Do not preface\
+      \ the value with any slashes. Ensure you use forward slashes in the path name."
+    dataType:
+      type: "primitive"
+      typeId: "STRING"
+    state:
+      dependencies: []
+      facets:
+      - type: "derivedValue"
+        value:
+          type: "constant"
+          value:
+            type: "string"
+            value: "myshare.domain.com/path/SOFTWARE/Veeam/Linux Agent"
+      - type: "mandatory"
+        value:
+          type: "constant"
+          value:
+            type: "boolean"
+            value: true
+    isMultiValued: false
+  - id: "sharepassword"
+    label: "sharepassword"
+    description: "Password for the username with access to the share where the .rpm\
+      \ and .lic files are stored."
+    dataType:
+      type: "primitive"
+      typeId: "SECURE_STRING"
+    state:
+      dependencies: []
+      facets:
+      - type: "encrypted"
+        value:
+          type: "constant"
+          value:
+            type: "boolean"
+            value: true
+      - type: "derivedValue"
+        value:
+          type: "constant"
+          value:
+            type: "secureString"
+            value: "password123"
+      - type: "mandatory"
+        value:
+          type: "constant"
+          value:
+            type: "boolean"
+            value: true
+    isMultiValued: false
+  - id: "host"
+    label: "Container"
+    description: ""
+    dataType:
+      type: "ref"
+      componentTypeId: "com.vmware.csp.iaas.blueprint.service"
+      classId: "Infrastructure.Machine.Schema"
+      label: "Machine"
+    state:
+      dependencies: []
+      facets:
+      - type: "mandatory"
+        value:
+          type: "constant"
+          value:
+            type: "boolean"
+            value: true
+      - type: "visible"
+        value:
+          type: "constantClause"
+          value:
+            type: "boolean"
+            value: false
+      - type: "internal"
+        value:
+          type: "constantClause"
+          value:
+            type: "boolean"
+            value: true
+    isMultiValued: false
+  - id: "shareusername"
+    label: "shareusername"
+    description: "Username with permissions to read from the share path specified\
+      \ in the \"sharepath\" property above."
+    dataType:
+      type: "primitive"
+      typeId: "STRING"
+    state:
+      dependencies: []
+      facets:
+      - type: "derivedValue"
+        value:
+          type: "constant"
+          value:
+            type: "string"
+            value: "user@domain.com"
+      - type: "mandatory"
+        value:
+          type: "constant"
+          value:
+            type: "boolean"
+            value: true
+    isMultiValued: false
+  - id: "edition"
+    label: "edition"
+    description: "Sets the license edition for the agent and must be either \"workstation\"\
+      \ or \"server\" without quotes."
+    dataType:
+      type: "primitive"
+      typeId: "STRING"
+    state:
+      dependencies: []
+      facets:
+      - type: "derivedValue"
+        value:
+          type: "constant"
+          value:
+            type: "string"
+            value: "server"
+      - type: "mandatory"
+        value:
+          type: "constant"
+          value:
+            type: "boolean"
+            value: true
+    isMultiValued: false
+containerFieldId: "host"
+lifecycleTasks:
+- createdDate: "2017-05-25T15:12:04.362Z"
+  lastUpdated: "2017-06-01T14:03:47.457Z"
+  script:
+    scriptContent: "#!/bin/bash\nyum -y install cifs-utils\necho \"Installing the\
+      \ EPEL repository packages.\"\ncurl -O https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm\n\
+      yum -y install epel-release-latest-7.noarch.rpm\necho \"Installing DKMS.\"\n\
+      yum -y install dkms\n###Get and install the RPM package###\nmkdir /mnt/vrafiles\n\
+      mount -t cifs -o sec=ntlm,username=$shareusername,password=$sharepassword \"\
+      //$sharepath\" /mnt/vrafiles\ncp /mnt/vrafiles/$agentpackage /tmp/veeam.rpm\n\
+      chmod +x /tmp/veeam.rpm\necho \"Installing the Veeam Agent for Linux.\"\nrpm\
+      \ -i /tmp/veeam.rpm\nyum -y install veeam"
+    isRebootAfter: false
+    scriptTypeId: "Bash"
+  taskDescriptorRef:
+    id: "INSTALL"
+    label: "Install"
+- createdDate: "2017-05-25T18:21:38.529Z"
+  lastUpdated: "2017-06-01T14:03:47.457Z"
+  script:
+    scriptContent: "#!/bin/bash\necho \"Installing license file using the edition\
+      \ defined.\"\nveeamconfig license install --path /mnt/vrafiles/$agentlicense\
+      \ --$edition\n###Verify the service is running.###\nif [ \"`systemctl is-active\
+      \ veeamservice`\" != \"active\" ] \nthen \n\techo \"The Veeam Agent for Linux\
+      \ isn't running for some reason. The installation may have failed somewhere.\"\
+      \n\texit 1\nfi \necho \"The Veeam Agent for Linux is now running!\"\n###Unmount\
+      \ the remote software repo###\numount /mnt/vrafiles"
+    isRebootAfter: false
+    scriptTypeId: "Bash"
+  taskDescriptorRef:
+    id: "CONFIGURE"
+    label: "Configure"

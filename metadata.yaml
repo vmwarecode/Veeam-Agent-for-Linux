@@ -1,0 +1,12 @@
+name: "auto-generated-pkg-53b42dae-6bd6-4a00-ac99-187cfb866954"
+productVersion: "7.2.0-SNAPSHOT"
+data:
+- locator: "software-component/Software.VeeamAgentLinux.yaml"
+  name: "Veeam Agent for Linux"
+  description: "Installs the Veeam Agent for Linux on CentOS or another RPM-based\
+    \ distro from an SMB share and licenses it as a server. Requires that the deployed\
+    \ machine have access to an SMB shared repository where the .rpm and .lic files\
+    \ reside, as well as have Internet access to the public Veeam software repos from\
+    \ where the packages will be pulled. Developed and tested on CentOS and OEL 7.3\
+    \ with the Veeam Agent for Linux 1.0 U1 on vRealize Automation 7.2."
+exportTime: "2017-06-01T14:13:04.783Z"
